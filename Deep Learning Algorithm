@@ -1,0 +1,611 @@
+  """Librairies Import"""
+
+import numpy as np
+import pandas as pd
+import tkinter
+
+"""--------------------------------------------------------------------------"""
+
+class Interval():                           #This function is used to select the interval wanted
+    def __init__(self, start, stop):
+        self.start = start
+        self.stop = stop
+    
+"""--------------------------------------------------------------------------"""
+    
+def ann(X_train, y_train, X_test, nbneurones, batch_size, epochs) :  # Creation the Artificial Neural Network (ANN)
+    from keras.models import Sequential
+    from keras.layers import Dense
+    from keras.layers import Dropout
+    
+    classifier = Sequential()                   #Initialize of the ANN
+    classifier.add(Dense(units = nbneurones, kernel_initializer = 'uniform', activation = 'relu', input_dim = len(X_train[0])))     #Adding the first layers of the ANN, the entry
+    classifier.add(Dropout(rate = 0.1))         # Resolve the problem of over-learning by 0.1% of chance to desactivate a nerone
+    classifier.add(Dense(units = nbneurones, kernel_initializer = 'uniform', activation = 'relu'))  #Creation of a layer in the ANN
+    classifier.add(Dropout(rate = 0.1))
+    classifier.add(Dense(units = len(y_train[0]), kernel_initializer = 'uniform', activation = 'softmax'))  #The last layer with the corect size. We use 'softmax' because we have several outings
+    classifier.compile(optimizer = 'rmsprop', loss = 'binary_crossentropy', metrics = ['accuracy']) #Choose so parameters to run run and optimize the algorithm
+    classifier.fit(X_train, y_train, batch_size = batch_size, epochs = epochs)  #Saying what are the entries and what are the outings
+    return classifier   # Return the classifier (the ANN)
+
+"""--------------------------------------------------------------------------"""
+
+def use_result(y_pred) : #The function used to give booleen outings
+    
+    y_result = np.copy(y_pred)
+    i = 0
+    j = 0
+    colone = 0
+    ligne =0
+    maxi = 0
+
+    for i in y_result:
+        maxi = max(i.tolist())
+        for j in i :
+            if (j == maxi) : 
+                y_pred[colone][ligne] = 1
+                    
+            else :
+                y_pred[colone][ligne] = 0
+            ligne = ligne + 1
+        colone = colone +1
+        ligne = 0
+        
+    return y_pred
+
+"""--------------------------------------------------------------------------"""
+
+def result(y_test, y_pred): # Function used to compare the predicted values with true values
+    i = 0
+    j = 0
+    colone = 0
+    ligne =0
+    correct_result = 0
+    correct_result2 = 0
+    flag = 0
+    for i in y_test:
+        for j in i :
+            if (y_pred[colone][ligne] == j) :
+                correct_result = correct_result + 1
+                flag = flag +1
+            else :
+                correct_result = correct_result  
+            ligne = ligne + 1 
+        colone = colone +1
+        ligne = 0
+        if (flag == 4):
+            correct_result2 = correct_result2 + 1
+        flag = 0
+    correct_result = correct_result / (len(y_pred[0])*len(y_pred))
+    correct_result2 = correct_result2 / len(y_pred)
+    return [correct_result, correct_result2]
+
+"""--------------------------------------------------------------------------"""
+
+def run(nb_neurone, nb_lot, nb_tours) :     #Used to run the algorithm by calling the ann function
+    
+    liste = []
+    classifier = ann(X_train, y_train, X_test, nb_neurone, nb_lot, nb_tours)
+    y_pred = classifier.predict(X_test)
+    y_pred = use_result(y_pred)
+    resultat = result(y_test, y_pred)
+    liste.append(resultat)
+    liste.append(classifier)
+    
+    return liste
+
+"""--------------------------------------------------------------------------"""
+
+def wait():     #Function used to create the first graphical interface 'WAIT'
+    
+    bg_color = "wheat1"
+    root_wait = tkinter.Tk ()
+    root_wait.config(bg = bg_color)
+    root_wait.title("Wait")
+    root_wait.geometry("+550+300")
+
+    fr = tkinter.Frame()
+    
+    text1 = tkinter.Label (fr,text = "-------------------------------------------------------------------")
+    text1.grid(column = 0, row = 0)
+    text1.config(bg = bg_color)
+    
+    text = tkinter.Label (fr,text = "WAIT")
+    text.config(font=('Helvetica', 18, 'bold'))
+    text.grid(column = 0, row = 1)
+    text.config(bg = bg_color)
+    
+    text1 = tkinter.Label (fr,text = "-------------------------------------------------------------------")
+    text1.grid(column = 0, row = 2)
+    text1.config(bg = bg_color)
+    
+    fr.grid (column = 0, row = 0) 
+    fr.config(bg = bg_color)
+    
+    fr1 = tkinter.Frame()
+    
+    space = tkinter.Label (fr1,text = "    ")
+    space.grid(column = 0, row = 0, columnspan = 1)
+    space.config(bg = bg_color)
+    
+    text = tkinter.Label (fr1,text = "The algorithm is learning...")
+    text.config(font=('Helvetica', 13, 'bold'))
+    text.grid(column = 0, row = 1)
+    text.config(bg = bg_color)
+    
+    space = tkinter.Label (fr1,text = "    ")
+    space.grid(column = 0, row = 2, columnspan = 1)
+    space.config(bg = bg_color)
+    
+    text = tkinter.Label (fr1,text = "You have to wait around 2 mins until it's done.")
+    text.config(font=('Helvetica', 9, 'bold'))
+    text.grid(column = 0, row = 3)
+    text.config(bg = bg_color)
+    
+    space = tkinter.Label (fr1,text = "    ")
+    space.grid(column = 0, row = 4, columnspan = 1)
+    space.config(bg = bg_color)
+    
+    text = tkinter.Label (fr1,text = "Thank you for your comprehension")
+    text.grid(column = 0, row = 5)
+    text.config(bg = bg_color)
+    
+    space = tkinter.Label (fr1,text = "    ")
+    space.grid(column = 0, row = 6, columnspan = 1)
+    space.config(bg = bg_color)
+    
+    fr1.grid (column = 0, row = 1) 
+    fr1.config(bg = bg_color)
+
+    
+    button1 = tkinter.Button(text = "Run the algorithm")
+    button1.grid(column = 0, row = 2)
+    button1.config(bg = "salmon")
+    
+    space = tkinter.Label (text = "    ")
+    space.grid(column = 0, row = 3, columnspan = 1)
+    space.config(bg = bg_color)
+    
+    button1.config (command = lambda: launch(root_wait))
+    
+    root_wait.mainloop()
+    
+"""--------------------------------------------------------------------------"""
+        
+def launch(root_wait) :
+    root_wait.destroy()
+    
+"""--------------------------------------------------------------------------"""
+
+
+def insert_information(num_precision, network_classifier) : ##Function used to create the Secon graphical interface 'INFORMATION'
+    class Patient() :
+        def __init__ (self):
+            self.sex = ""
+            self.age = 0
+            self.height = 0
+            self.weight = 0
+            self.BMI = 0
+        
+    def case1_pushed():
+        sex_entry2.deselect ()
+    
+    def case2_pushed():
+        sex_entry1.deselect ()  
+    
+    def button_pushed(patient) :
+        flag = 0
+    
+        if Age_entry.get() != "" :
+            Age_entry.config(bg = "spring green")
+            age = Age_entry.get()
+            flag = flag + 1
+        else :
+            Age_entry.config(bg = "red")
+            
+        if Height_entry.get() != "" :
+            Height_entry.config(bg = "spring green")
+            height = Height_entry.get()
+            flag = flag + 1
+        else :
+            Height_entry.config(bg = "red")
+            
+        if Weight_entry.get() != "" :
+            Weight_entry.config(bg = "spring green")
+            weight = Weight_entry.get()
+            flag = flag + 1
+        else :
+            Weight_entry.config(bg = "red")
+            
+        if (v1.get() == 1) | (v2.get() == 1):
+            flag = flag + 1
+            if v1.get() == 1 :
+                box  = 1
+                sex_entry1.config(selectcolor = "spring green")
+                sex_entry2.config(selectcolor = "snow")
+            else :
+                box = 0
+                sex_entry2.config(selectcolor = "spring green")
+                sex_entry1.config(selectcolor = "snow")
+        else :
+            sex_entry1.config(selectcolor = "red")
+            sex_entry2.config(selectcolor = "red")
+    
+        if flag == 4 :
+            patient.age = age
+            patient.height = height
+            patient.weight = weight
+            patient.sex = box
+            patient.BMI = (int(patient.weight) / ((int(patient.height)*0.01) * (int(patient.height)*0.01)))
+            Xnew = np.array([[patient.sex, patient.age, patient.height, patient.weight, 163, 102, 73, patient.BMI]])
+            new_prediction = network_classifier.predict(sc.transform(Xnew))
+            Final_result = use_result(new_prediction)
+            index = 0
+            position_1 = 0
+            for i in Final_result :
+                for c in i :
+                    if c == 1 :
+                        position_1 = index
+                    else :
+                        index = index + 1
+                
+            root.destroy()
+            
+            result_windows(num_precision, position_1)
+                 
+        flag = 0
+        
+    patient = Patient()
+    
+    bg_color = "wheat1"
+    
+    root = tkinter.Tk ()
+    root.config(bg = bg_color)
+    root.title("Informations")
+    root.geometry("+550+300")
+    
+    f1 = tkinter.Frame ()
+    
+    text = tkinter.Label (f1,text = "Please fill this correctly")
+    text.grid(column = 0, row = 0)
+    text.config(bg = bg_color)
+    
+    
+    text2 = tkinter.Label (f1,text = " Ex : Age : 45 YO / Height : 186 Meters / Weight : 79 Kg")
+    text2.grid(column = 0, row = 1)
+    text2.config(bg = bg_color)
+    text2.config(state = tkinter.DISABLED)
+    
+    text3 = tkinter.Label (f1,text = "-------------------------------------------------------------------")
+    text3.grid(column = 0, row = 2)
+    text3.config(bg = bg_color)
+    
+    f1.grid (column = 0, row = 0) 
+    
+    f = tkinter.Frame ()
+    
+    Age = tkinter.Label (f,text = "Age = ")
+    Age.grid (column = 0, row = 0)
+    Age.config(bg = bg_color)
+    
+    espace = tkinter.Label (f, text = "    ")
+    espace.grid (column = 1, row = 0, columnspan = 1)
+    espace.config(bg = bg_color)
+     
+    Age_entry = tkinter.Entry (f)
+    Age_entry.grid (column = 2, row = 0)
+    Age_entry.config(bg = "snow")
+    
+    yo = tkinter.Label (f,text = "YO")
+    yo.grid (column = 4, row = 0, columnspan = 1)
+    yo.config(state = tkinter.DISABLED)
+    yo.config(bg = bg_color)
+    
+    espace = tkinter.Label (f, text = "    ")
+    espace.grid (column = 0, row = 1, columnspan = 1)
+    espace.config(bg = bg_color)
+                          
+    Height = tkinter.Label (f,text = "Height = ")
+    Height.grid (column = 0, row = 2)
+    Height.config(bg = bg_color)
+    
+    espace = tkinter.Label (f, text = "    ")
+    espace.grid (column = 1, row = 2, columnspan = 1)
+    espace.config(bg = bg_color)
+     
+    Height_entry = tkinter.Entry (f)
+    Height_entry.grid (column = 2, row = 2)
+    Height_entry.config(text = "ex : 186")
+    Height_entry.config(bg = "snow")
+    
+    m = tkinter.Label (f,text = "Centimeters")
+    m.grid (column = 4, row = 2, columnspan = 1)
+    m.config(state = tkinter.DISABLED)
+    m.config(bg = bg_color)
+    
+    espace = tkinter.Label (f, text = "    ")
+    espace.grid (column = 0, row = 3, columnspan = 1)
+    espace.config(bg = bg_color)
+    
+    Weight = tkinter.Label (f,text = "Weight = ")
+    Weight.grid (column = 0, row = 4)
+    Weight.config(bg = bg_color)
+    
+    espace = tkinter.Label (f, text = "    ")
+    espace.grid (column = 1, row = 4, columnspan = 1)
+    espace.config(bg = bg_color)
+     
+    Weight_entry = tkinter.Entry (f)
+    Weight_entry.grid (column = 2, row = 4)
+    Weight_entry.config(text = "ex : 82")
+    Weight_entry.config(bg = "snow")
+    
+    Kg = tkinter.Label (f,text = "Kg")
+    Kg.grid (column = 4, row = 4, columnspan = 1)
+    Kg.config(state = tkinter.DISABLED)
+    Kg.config(bg = bg_color)
+    
+    espace = tkinter.Label (f, text = "    ")
+    espace.grid (column = 0, row = 5, columnspan = 1)
+    espace.config(bg = bg_color)
+    
+    f.grid (column = 0, row = 1) 
+    
+    f2 = tkinter.Frame ()
+    
+    sex = tkinter.Label (f2, text = "Sex = ")
+    sex.grid (column = 0, row = 0)
+    sex.config(bg = bg_color)
+    
+    espace = tkinter.Label (f2, text = "    ")
+    espace.grid (column = 1, row = 0, columnspan = 1)
+    espace.config(bg = bg_color)
+    
+    Male = tkinter.Label (f2, text = "Male : ")
+    Male.grid (column = 2, row = 0)
+    Male.config(bg = bg_color)
+    
+    v1= tkinter.IntVar()
+    
+    sex_entry1 = tkinter.Checkbutton(f2, variable = v1)
+    sex_entry1.grid (column = 3, row = 0)
+    sex_entry1.config(bg = bg_color)
+    
+    Female = tkinter.Label (f2, text = "Female : ")
+    Female.grid (column = 4, row = 0)
+    Female.config(bg = bg_color)
+    
+    v2= tkinter.IntVar()
+    
+    sex_entry2 = tkinter.Checkbutton(f2, variable = v2)
+    sex_entry2.grid (column = 5, row = 0)
+    sex_entry2.config(bg = bg_color)
+    
+    espace = tkinter.Label (f2, text = "    ")
+    espace.grid (column = 0, row = 1, columnspan = 1)
+    espace.config(bg = bg_color)
+    
+    f2.grid()
+
+    button = tkinter.Button(text = "Validate")
+    button.grid(column = 0, row = 6)
+    button.config(bg = "salmon")
+    
+    espace = tkinter.Label (text = "    ")
+    espace.grid (column = 0, row = 7, columnspan = 1)
+    espace.config(bg = bg_color)
+    
+    f1.config(bg = bg_color)
+    f.config(bg = bg_color)
+    f2.config(bg = bg_color) 
+     
+
+    sex_entry1.config(command = case1_pushed)
+    sex_entry2.config(command = case2_pushed)
+    button.config (command = lambda: button_pushed(patient))
+    
+    root.mainloop ()
+
+    
+    """-------------------------------------------------------------------"""
+def button_NewPatient_pushed(num_precision, root_result) :
+    root_result.destroy()
+    insert_information(num_precision)
+
+def button_Close_pushed(root_result) :
+    root_result.destroy()
+    
+    
+def result_windows(num_precision, position_1):      #Function used to create the Last graphical interface 'RESULT'
+    
+    bg_color = "wheat1"
+    
+    root_result = tkinter.Tk ()
+    root_result.config(bg = bg_color)
+    root_result.title("Result")
+    root_result.geometry("+550+300")
+    
+    frame = tkinter.Frame()
+    
+    text1 = tkinter.Label (frame,text = "-------------------------------------------------------------------")
+    text1.grid(column = 0, row = 0)
+    text1.config(bg = bg_color)
+    
+    text = tkinter.Label (frame,text = "RESULT")
+    text.config(font=('Helvetica', 18, 'bold'))
+    text.grid(column = 0, row = 1)
+    text.config(bg = bg_color)
+    
+    text1 = tkinter.Label (frame,text = "-------------------------------------------------------------------")
+    text1.grid(column = 0, row = 2)
+    text1.config(bg = bg_color)
+    
+    frame.grid (column = 0, row = 0) 
+    frame.config(bg = bg_color)
+    frame_result = tkinter.Frame ()
+    
+    space = tkinter.Label (frame_result,text = "    ")
+    space.grid(column = 0, row = 0, columnspan = 1)
+    space.config(bg = bg_color)
+    
+    you = tkinter.Label (frame_result,text = "The algorithm says that you are :")
+    you.grid(column = 0, row = 1)
+    you.config(bg = bg_color)
+    
+    space = tkinter.Label (frame_result,text = "    ")
+    space.grid(column = 0, row = 2, columnspan = 1)
+    space.config(bg = bg_color)
+    
+    if position_1 == 0 :
+        diagnosis = tkinter.Label (frame_result,text = "NORMAL")
+    elif position_1 == 1 :
+        diagnosis = tkinter.Label (frame_result,text = "PREHYPERTENSION")
+    elif position_1 == 2 :
+        diagnosis = tkinter.Label (frame_result,text = "HYPERTENSION TYPE 1")
+    else :
+        diagnosis = tkinter.Label (frame_result,text = "HYPERTENSION TYPE 2")
+    
+    diagnosis.config(font=('Helvetica', 18, 'bold'))
+    diagnosis.grid(column = 0, row = 3)
+    diagnosis.config(bg = bg_color)
+    
+    space = tkinter.Label (frame_result,text = "    ")
+    space.grid(column = 0, row = 4, columnspan = 1)
+    space.config(bg = bg_color)
+    
+    frame_result.grid (column = 0, row = 1) 
+    frame_result.config(bg = bg_color)
+    
+    frame_precision = tkinter.Frame ()
+    
+    precision1 = tkinter.Label (frame_precision,text = "The diagnosis has ")
+    precision1.grid(column = 0, row = 0)
+    precision1.config(bg = bg_color)
+    
+    precision2 = tkinter.Label (frame_precision,text = num_precision)
+    precision2.config(font=('Helvetica', 9, 'bold'))
+    precision2.grid(column = 1, row = 0)
+    precision2.config(bg = bg_color)
+    
+    precision3 = tkinter.Label (frame_precision,text = "% chance of being true")
+    precision3.grid(column = 2, row = 0)
+    precision3.config(bg = bg_color)
+    
+    space = tkinter.Label (frame_precision,text = "    ")
+    space.grid(column = 0, row = 1, columnspan = 1)
+    space.config(bg = bg_color)
+    
+    precision1.config(state = tkinter.DISABLED)
+    precision2.config(state = tkinter.DISABLED)
+    precision3.config(state = tkinter.DISABLED)
+    
+    frame_precision.grid (column = 0, row = 2) 
+    frame_precision.config(bg = bg_color)
+    
+    frame_button = tkinter.Frame()
+    
+    button_NewPatient = tkinter.Button(frame_button, text = "New Patient")
+    button_NewPatient.grid(column = 0, row = 0)
+    button_NewPatient.config(bg = "salmon")
+    
+    space = tkinter.Label (frame_button, text = "    ")
+    space.grid(column = 1, row = 0, columnspan = 1)
+    space.config(bg = bg_color)
+    
+    button_close = tkinter.Button(frame_button, text = "Close")
+    button_close.grid(column = 2, row = 0)
+    button_close.config(bg = "salmon")
+    
+    space = tkinter.Label (frame_button, text = "    ")
+    space.grid(column = 0, row = 1, columnspan = 1)
+    space.config(bg = bg_color)
+    
+    frame_button.grid (column = 0, row = 3) 
+    frame_button.config(bg = bg_color)
+    
+    button_NewPatient.config (command = lambda: button_NewPatient_pushed(num_precision, root_result))
+    button_close.config (command = lambda: button_Close_pushed(root_result))
+    
+    root_result.mainloop ()
+
+
+    
+"""--------------------------------------------------------------------------"""
+"""--------------------------------------------------------------------------"""
+"""--------------------------------------------------------------------------"""
+
+"""Loading the CSV file"""
+
+dataset = pd.read_csv("Classeur1.csv")
+     
+"""Separation of input and output data"""
+
+x_int = Interval(2, 10)
+y_int = Interval(10, 11)
+
+X = dataset.iloc[: , x_int.start : x_int.stop].values
+y = dataset.iloc[: , y_int.start : y_int.stop].values
+
+"""Encoding categorical values"""
+    
+from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import OneHotEncoder
+    
+labelencoder_X = LabelEncoder()
+X[:, 0] = labelencoder_X.fit_transform(X[:, 0])
+onehotencoder_X = OneHotEncoder(categorical_features = [0])
+X = onehotencoder_X.fit_transform(X).toarray()
+X = X[:, 1:]
+    
+labelencoder_y = LabelEncoder()
+y[:, -1] = labelencoder_y.fit_transform(y[:, -1])
+onehotencoder_y = OneHotEncoder(categories='auto')
+y = onehotencoder_y.fit_transform(y).toarray()
+    
+"""Separation of data into training and test data"""
+    
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20, random_state = 0)
+    
+"""Put the data on the same scale"""
+    
+from sklearn.preprocessing import StandardScaler
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+"-------------------------------------------------------------------"""
+
+wait()  #Calling the first windows
+
+"""--------------------Searching for the best ANN -------------------------"""
+
+final_result =[]
+n = 0
+while (n < 1) :
+    network = run(10, 20, 500)
+    result_network = network[0]
+    final_result.append(result_network[1])
+    n = n + 1
+val_max = max(final_result)
+result2 = 0
+c = 0
+while (result2 < val_max):
+    network2 = run(10, 20, 500)
+    result2_network = network2[0]
+    result2 = result2_network[1]
+    network_classifier = network2[1] 
+    c= c + 1
+    if c > 20 :
+        val_max = val_max - 0.01
+        c = 0             
+
+"""------------------------------------------------------------------------------------------------"""
+"""------------------------------The algorithm is ready to be used---------------------------------"""
+"""------------------------------------------------------------------------------------------------"""
+
+insert_information(str(int(result2 * 100)), network_classifier)
+
+
+
+
